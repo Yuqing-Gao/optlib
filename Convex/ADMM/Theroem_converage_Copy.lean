@@ -98,12 +98,14 @@ lemma ey_isBounded' : ∃ (r : ℝ), (range ey) ⊆ ball 0 r := sorry
 lemma ey_isBounded : IsBounded (range ey ) := (isBounded_iff_subset_ball 0).2  ey_isBounded'
 
 --gyq
-#check Metric.mem_ball
+--从这里开始
 #check SeminormedAddGroup.dist_eq
 #check norm_add_le
 #check Real.sqrt_sq
 #check norm_nonneg
 --A₂e₂ 是有界序列
+lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 < ‖Φ n‖ := by sorry
+
 lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r := by
 
    have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
@@ -118,37 +120,44 @@ lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r
       exact h_in_ball
 
    let r := √ (r_Φ / ρ)
+   have hr : r = √ (r_Φ / ρ) := by rfl
    use r
-
    intros x hx
    rcases hx with ⟨n, rfl⟩
-   let Ae := A₂ (e₂ n)
 
-   have h2 : ρ * ‖A₂ (e₂ n)‖ ^ 2 < ‖Φ n‖ := by sorry
-      -- unfold Φ
-      -- unfold Ψ
+   have h2 : ρ * ‖A₂ (e₂ n)‖ ^ 2 < ‖Φ n‖ := by apply ineq1
 
-   have h3 : ρ * ‖Ae‖ ^ 2 < r_Φ := by
+   have h3 : ρ * ‖A₂ (e₂ n)‖ ^ 2 < r_Φ := by
       apply lt_trans
       · apply h2
       · apply h1
 
-   have h4 : 0 ≤ ‖Ae‖ := by
+   have h4 : 0 ≤ ‖A₂ (e₂ n)‖ := by
       apply norm_nonneg
 
-   have h5: ‖Ae‖ < r := by
-      calc ‖Ae‖
-         = √ (‖Ae‖ ^ 2) := by sorry
-            -- rw [← Real.sqrt_sq (‖Ae‖),h4]
-         _ < r := by sorry
+   have h5: ‖A₂ (e₂ n)‖ < √ (r_Φ / ρ) := by
+      calc ‖A₂ (e₂ n)‖
+         = √ ((‖A₂ (e₂ n)‖) ^ 2) := by conv in ‖A₂ (e₂ n)‖ => rw [← Real.sqrt_sq h4];rfl
+         _ < √ (r_Φ / ρ) := by
+            rw [← lt_div_iff' ADMM.hrho] at h3
+            apply Real.sqrt_lt_sqrt at h3
+            exact h3; simp
 
-   have h6: dist (Ae) 0 < r := by
-      rw[← sub_zero (Ae)] at h5
-      rw[SeminormedAddGroup.dist_eq (Ae) 0]
+   have h6: dist (A₂ (e₂ n)) 0 < √ (r_Φ / ρ) := by
+      rw[← sub_zero (A₂ (e₂ n))] at h5
+      rw[SeminormedAddGroup.dist_eq (A₂ (e₂ n)) 0]
       exact h5
+
+   rw [← hr] at h6
+   rw [← Metric.mem_ball] at h6
+   apply h6
 
 --A₁e₁ + A₂e₂ 是有界序列
 lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) ⊆ ball 0 r := sorry
+
+
+--到这里结束
+
 lemma A₁e₁_A₂e₂_isBounded : IsBounded (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) :=
    (isBounded_iff_subset_ball 0).2 A₁e₁_A₂e₂_isBounded'
 
