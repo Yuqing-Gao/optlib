@@ -104,7 +104,7 @@ lemma ey_isBounded : IsBounded (range ey ) := (isBounded_iff_subset_ball 0).2  e
 #check Real.sqrt_sq
 #check norm_nonneg
 --A₂e₂ 是有界序列
-lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 < ‖Φ n‖ := by sorry
+lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
 
 lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r := by
 
@@ -125,12 +125,12 @@ lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r
    intros x hx
    rcases hx with ⟨n, rfl⟩
 
-   have h2 : ρ * ‖A₂ (e₂ n)‖ ^ 2 < ‖Φ n‖ := by apply ineq1
+   have h2 : ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by apply ineq1
 
    have h3 : ρ * ‖A₂ (e₂ n)‖ ^ 2 < r_Φ := by
-      apply lt_trans
-      · apply h2
-      · apply h1
+      calc
+      ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := h2
+      _ < r_Φ := h1 n
 
    have h4 : 0 ≤ ‖A₂ (e₂ n)‖ := by
       apply norm_nonneg
