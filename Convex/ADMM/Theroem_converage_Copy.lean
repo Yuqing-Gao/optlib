@@ -98,7 +98,6 @@ lemma ey_isBounded' : ∃ (r : ℝ), (range ey) ⊆ ball 0 r := sorry
 lemma ey_isBounded : IsBounded (range ey ) := (isBounded_iff_subset_ball 0).2  ey_isBounded'
 
 --gyq
---从这里开始
 --A₂e₂ 是有界序列
 lemma unfold_Φ: ∀ n, ‖Φ n‖ = ‖1 / (τ*ρ) * ‖ey n‖ ^ 2
 + ρ * ‖A₂ (e₂ n)‖ ^ 2
@@ -113,7 +112,8 @@ lemma rho_pos : 0 < ρ := by exact ADMM.hrho
 lemma zero_le_tau_mul_rho : 0 ≤ τ * ρ := by
    have h : 0 < τ * ρ := by exact mul_pos tau_pos rho_pos
    apply le_of_lt h
-lemma max_tau_pos : 0 ≤ max (1 - τ) (1 - 1 / τ) := by
+
+lemma max_tau_nonneg : 0 ≤ max (1 - τ) (1 - 1 / τ) := by
    have h1: 0 ≤ 1 - τ ∨ 0 ≤ 1 - 1 / τ := by
       by_cases h_tau_le_1 : τ ≤ 1
       left; linarith [h_tau_le_1]
@@ -123,6 +123,9 @@ lemma max_tau_pos : 0 ≤ max (1 - τ) (1 - 1 / τ) := by
          rw [← div_lt_one tau_pos] at h_tau_le_1
          exact h_tau_le_1
       linarith [hτ_inv_pos]
+
+   rw [← le_max_iff] at h1
+   exact h1
 
 lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
    intro n
@@ -141,7 +144,7 @@ lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
    have hx3: 0 ≤ x3 := by
       apply mul_nonneg
       · apply mul_nonneg
-         max_tau_pos; apply le_of_lt rho_pos
+         max_tau_nonneg; apply le_of_lt rho_pos
       · apply pow_nonneg; simp
 
    have h: ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ ↔ x2 ≤ ‖x1 + x2 + x3‖ := by rw[unfold_Φ]
@@ -151,7 +154,32 @@ lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
    have htrans: x2 ≤ ‖x1 + x2 + x3‖ := by linarith [hx2, h_norm_pos]
    exact (h.mpr htrans)
 
-lemma ineq2: ∀ n, max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 < ‖Φ n‖ := by sorry
+lemma ineq2: ∀ n, max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
+   intro n
+   let x1 := 1 / (τ*ρ) * ‖ey n‖ ^ 2
+   have hx1: 0 ≤ x1 := by
+      apply mul_nonneg
+      · apply div_nonneg
+         zero_le_one; exact zero_le_tau_mul_rho
+      · apply pow_nonneg; simp
+   let x2 := ρ * ‖A₂ (e₂ n)‖ ^ 2
+   have hx2: 0 ≤ x2 := by
+      apply mul_nonneg
+      · apply le_of_lt rho_pos
+      · apply pow_nonneg; simp
+   let x3 := max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2
+   have hx3: 0 ≤ x3 := by
+      apply mul_nonneg
+      · apply mul_nonneg
+         max_tau_nonneg; apply le_of_lt rho_pos
+      · apply pow_nonneg; simp
+
+   have h: max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ ↔ x3 ≤ ‖x1 + x2 + x3‖ := by rw[unfold_Φ]
+   have h_norm_pos : 0 ≤ ‖x1 + x2 + x3‖ := by exact norm_nonneg (x1 + x2 + x3)
+   have h_norm_eq : ‖x1 + x2 + x3‖ = x1 + x2 + x3 := by rw [Real.norm_of_nonneg];linarith [hx1, hx2, hx3]
+
+   have htrans: x3 ≤ ‖x1 + x2 + x3‖ := by linarith [hx2, h_norm_pos]
+   exact (h.mpr htrans)
 
 lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r := by
 
@@ -200,10 +228,52 @@ lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r
    apply h6
 
 --A₁e₁ + A₂e₂ 是有界序列
-lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) ⊆ ball 0 r := sorry
+lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) ⊆ ball 0 r := by
+
+   have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
+   rcases hΦ with ⟨r_Φ, hΦ⟩
+
+   have h1 : ∀ n, ‖Φ n‖ < r_Φ := by
+      intro n
+      have h0 : Φ n ∈ range Φ := by use n
+      have h_in_ball : Φ n ∈ Metric.ball 0 r_Φ := by
+         apply hΦ h0
+      rw [Metric.mem_ball, dist_zero_right] at h_in_ball
+      exact h_in_ball
+
+   let pm := max (1 - τ) (1 - 1 / τ)
+   let r := √ (r_Φ / (ρ * pm))
+   have hr : r = √ (r_Φ / (ρ * pm)) := by rfl
+   use r
+   intros x hx
+   rcases hx with ⟨n, rfl⟩
+
+   have h2 : pm * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by apply ineq2
+
+   have h3 : pm * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 < r_Φ := by
+      calc
+      pm * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := h2
+      _ < r_Φ := h1 n
+
+   have h4 : 0 ≤ ‖A₁ (e₁ n) + A₂ (e₂ n)‖ := by
+      apply norm_nonneg
+
+   -- when τ = 1, pm = 0
+   have rho_pm_pos : (ρ * pm) > 0 := by sorry
+
+   have rho_pm_comm : ρ * pm = pm * ρ := by ring
+
+   have h5 : ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (r_Φ / (ρ * pm)) := by
+      calc ‖A₁ (e₁ n) + A₂ (e₂ n)‖
+      = √ ((‖A₁ (e₁ n) + A₂ (e₂ n)‖) ^ 2) := by conv in ‖A₁ (e₁ n) + A₂ (e₂ n)‖ => rw [← Real.sqrt_sq h4];rfl
+      _ < √ (r_Φ / (ρ * pm)) := by
+         rw [← rho_pm_comm] at h3
+         rw [← lt_div_iff' rho_pm_pos] at h3
+         apply Real.sqrt_lt_sqrt at h3
+         exact h3; simp
 
 
---到这里结束
+#check lt_div_iff'
 
 lemma A₁e₁_A₂e₂_isBounded : IsBounded (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) :=
    (isBounded_iff_subset_ball 0).2 A₁e₁_A₂e₂_isBounded'
