@@ -99,12 +99,59 @@ lemma ey_isBounded : IsBounded (range ey ) := (isBounded_iff_subset_ball 0).2  e
 
 --gyq
 --从这里开始
-#check SeminormedAddGroup.dist_eq
-#check norm_add_le
-#check Real.sqrt_sq
-#check norm_nonneg
 --A₂e₂ 是有界序列
+lemma unfold_Φ: ∀ n, ‖Φ n‖ = ‖1 / (τ*ρ) * ‖ey n‖ ^ 2
++ ρ * ‖A₂ (e₂ n)‖ ^ 2
++ max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2‖ := by
+   unfold Φ Ψ
+   simp
+
+lemma tau_pos : 0 < τ := by apply ADMM.htau.1
+
+lemma rho_pos : 0 < ρ := by exact ADMM.hrho
+
+lemma zero_le_tau_mul_rho : 0 ≤ τ * ρ := by
+   have h : 0 < τ * ρ := by exact mul_pos tau_pos rho_pos
+   apply le_of_lt h
+lemma max_tau_pos : 0 ≤ max (1 - τ) (1 - 1 / τ) := by
+   have h1: 0 ≤ 1 - τ ∨ 0 ≤ 1 - 1 / τ := by
+      by_cases h_tau_le_1 : τ ≤ 1
+      left; linarith [h_tau_le_1]
+      right
+      have hτ_inv_pos : 1 / τ < 1 := by
+         rw [not_le] at h_tau_le_1
+         rw [← div_lt_one tau_pos] at h_tau_le_1
+         exact h_tau_le_1
+      linarith [hτ_inv_pos]
+
 lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
+   intro n
+   let x1 := 1 / (τ*ρ) * ‖ey n‖ ^ 2
+   have hx1: 0 ≤ x1 := by
+      apply mul_nonneg
+      · apply div_nonneg
+         zero_le_one; exact zero_le_tau_mul_rho
+      · apply pow_nonneg; simp
+   let x2 := ρ * ‖A₂ (e₂ n)‖ ^ 2
+   have hx2: 0 ≤ x2 := by
+      apply mul_nonneg
+      · apply le_of_lt rho_pos
+      · apply pow_nonneg; simp
+   let x3 := max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2
+   have hx3: 0 ≤ x3 := by
+      apply mul_nonneg
+      · apply mul_nonneg
+         max_tau_pos; apply le_of_lt rho_pos
+      · apply pow_nonneg; simp
+
+   have h: ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ ↔ x2 ≤ ‖x1 + x2 + x3‖ := by rw[unfold_Φ]
+   have h_norm_pos : 0 ≤ ‖x1 + x2 + x3‖ := by exact norm_nonneg (x1 + x2 + x3)
+   have h_norm_eq : ‖x1 + x2 + x3‖ = x1 + x2 + x3 := by rw [Real.norm_of_nonneg];linarith [hx1, hx2, hx3]
+
+   have htrans: x2 ≤ ‖x1 + x2 + x3‖ := by linarith [hx2, h_norm_pos]
+   exact (h.mpr htrans)
+
+lemma ineq2: ∀ n, max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 < ‖Φ n‖ := by sorry
 
 lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r := by
 
