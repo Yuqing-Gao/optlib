@@ -208,33 +208,44 @@ lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂
    -- obtain r_Φ
    have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
    rcases hΦ with ⟨r_Φ, hΦ⟩
-   -- obtain r
-   let r := √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))
-   have hr : r =√ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by rfl
+
+   -- h1 ~ h5 : n ≥ 1 (n : ℕ +)
+   have h1 (k : ℕ+): (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 ≤
+   (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 +
+   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 := by sorry
+
+   have h2 (k : ℕ+): (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 ≤ (Φ k) - (Φ (k + 1)) := by sorry
+
+   have h3 (k : ℕ+): (Φ k) - (Φ (k + 1)) < 2 * r_Φ := by sorry
+
+   have h4 (k : ℕ+): (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 < 2 * r_Φ := by
+      calc (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2
+         _ ≤ (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 := h1 k
+         _ ≤ (Φ k) - (Φ (k + 1)) := h2 k
+         _ < 2 * r_Φ := h3 k
+
+   have h5 (k : ℕ+): ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ < √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
+
+   -- back to goal : n : ℕ
+   have h5' (n : ℕ) (hn : n ≥ 2): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
+
+   have h_n0 (n : ℕ) (hn : n = 0): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + 1 := by linarith
+
+   have h_n1 (n : ℕ) (hn : n = 1): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + 1 := by linarith
+
+   -- introduce new r
+   let r := (max (max (√ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))) (‖A₁ (e₁ 0) + A₂ (e₂ 0)‖ + 1 )) (‖A₁ (e₁ 1) + A₂ (e₂ 1)‖ + 1 ))  -- can we change r's value here? idk
    use r
-   -- change goal, introduce n
+   -- change goal, introduce n : ℕ
    intros x hx
    rcases hx with ⟨n, rfl⟩
-   #check n
-   -- h1 ~ h5 : n ≥ 1 (n : ℕ +)
-   have h1 : (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 ≤
-   (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 +
-   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := by sorry
-   have h3 : (Φ n ) - (Φ (n + 1) ) < 2 * r_Φ := by sorry
-   have h2 : (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 ≤ (Φ n ) - (Φ (n + 1) ) := by sorry
-   have h4 : (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 < 2 * r_Φ := by
-      calc (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2
-         _ ≤ (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := h1
-         _ ≤ (Φ n ) - (Φ (n + 1) ) := h2
-         _ < 2 * r_Φ := h3
-   have h5 : ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
 
-   -- back to goal : n ≥ 0 (n : ℕ)
-   have h5' : ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
+   -- combine h5' h_n0 h_n1 together
+   have h_n (n : ℕ): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < r := by sorry
 
-   have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < √ ( 2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
+   have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < r := by sorry
 
-   rw [← hr] at h6; rw [← Metric.mem_ball] at h6; simp; simp at h6
+   rw [← Metric.mem_ball] at h6; simp; simp at h6
    exact h6
 
 
