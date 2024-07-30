@@ -154,33 +154,6 @@ lemma ineq1: ∀ n, ρ * ‖A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
    have htrans: x2 ≤ ‖x1 + x2 + x3‖ := by linarith [hx2, h_norm_pos]
    exact (h.mpr htrans)
 
-lemma ineq2: ∀ n, max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by
-   intro n
-   let x1 := 1 / (τ*ρ) * ‖ey n‖ ^ 2
-   have hx1: 0 ≤ x1 := by
-      apply mul_nonneg
-      · apply div_nonneg
-         zero_le_one; exact zero_le_tau_mul_rho
-      · apply pow_nonneg; simp
-   let x2 := ρ * ‖A₂ (e₂ n)‖ ^ 2
-   have hx2: 0 ≤ x2 := by
-      apply mul_nonneg
-      · apply le_of_lt rho_pos
-      · apply pow_nonneg; simp
-   let x3 := max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2
-   have hx3: 0 ≤ x3 := by
-      apply mul_nonneg
-      · apply mul_nonneg
-         max_tau_nonneg; apply le_of_lt rho_pos
-      · apply pow_nonneg; simp
-
-   have h: max (1 - τ) (1 - 1 / τ) * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ ↔ x3 ≤ ‖x1 + x2 + x3‖ := by rw[unfold_Φ]
-   have h_norm_pos : 0 ≤ ‖x1 + x2 + x3‖ := by exact norm_nonneg (x1 + x2 + x3)
-   have h_norm_eq : ‖x1 + x2 + x3‖ = x1 + x2 + x3 := by rw [Real.norm_of_nonneg];linarith [hx1, hx2, hx3]
-
-   have htrans: x3 ≤ ‖x1 + x2 + x3‖ := by linarith [hx2, h_norm_pos]
-   exact (h.mpr htrans)
-
 lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r := by
 
    have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
@@ -228,52 +201,58 @@ lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r
    apply h6
 
 --A₁e₁ + A₂e₂ 是有界序列
+#check Φ_isdescending
+#check Φ_isBounded'
+#check
+
 lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) ⊆ ball 0 r := by
 
    have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
    rcases hΦ with ⟨r_Φ, hΦ⟩
 
-   have h1 : ∀ n, ‖Φ n‖ < r_Φ := by
-      intro n
-      have h0 : Φ n ∈ range Φ := by use n
-      have h_in_ball : Φ n ∈ Metric.ball 0 r_Φ := by
-         apply hΦ h0
-      rw [Metric.mem_ball, dist_zero_right] at h_in_ball
-      exact h_in_ball
 
-   let pm := max (1 - τ) (1 - 1 / τ)
-   let r := √ (r_Φ / (ρ * pm))
-   have hr : r = √ (r_Φ / (ρ * pm)) := by rfl
+   have h1 :  ∀ n : ℕ+ , (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 <
+   (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 +
+   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := by sorry
+
+   have h2 : ∀ n : ℕ+ , (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 +
+   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 ≤ (Φ n ) - (Φ (n + 1) ) := by exact Φ_isdescending
+
+   have h3 : ∀ n : ℕ+ , ∃ r_Φ : ℝ, (Φ n ) - (Φ (n + 1) ) < r_Φ := by sorry
+
+   have h4 : ∀ n : ℕ+ , ∃ r_Φ : ℝ, (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 < r_Φ := by sorry
+
+   let r := √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))
+   have hr : r =√ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by rfl
    use r
+
    intros x hx
    rcases hx with ⟨n, rfl⟩
 
-   have h2 : pm * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := by apply ineq2
+   have h5 : ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
 
-   have h3 : pm * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 < r_Φ := by
-      calc
-      pm * ρ * ‖A₁ (e₁ n) + A₂ (e₂ n)‖ ^ 2 ≤ ‖Φ n‖ := h2
-      _ < r_Φ := h1 n
+   have h5' : ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
 
-   have h4 : 0 ≤ ‖A₁ (e₁ n) + A₂ (e₂ n)‖ := by
-      apply norm_nonneg
+   have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by
+      rw [← sub_zero (A₁ (e₁ n) + A₂ (e₂ n)) ] at h5'
+      rw[SeminormedAddGroup.dist_eq  (A₁ (e₁ n) + A₂ (e₂ n)) 0]
+      exact h5'
 
-   -- when τ = 1, pm = 0
-   have rho_pm_pos : (ρ * pm) > 0 := by sorry
-
-   have rho_pm_comm : ρ * pm = pm * ρ := by ring
-
-   have h5 : ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (r_Φ / (ρ * pm)) := by
-      calc ‖A₁ (e₁ n) + A₂ (e₂ n)‖
-      = √ ((‖A₁ (e₁ n) + A₂ (e₂ n)‖) ^ 2) := by conv in ‖A₁ (e₁ n) + A₂ (e₂ n)‖ => rw [← Real.sqrt_sq h4];rfl
-      _ < √ (r_Φ / (ρ * pm)) := by
-         rw [← rho_pm_comm] at h3
-         rw [← lt_div_iff' rho_pm_pos] at h3
-         apply Real.sqrt_lt_sqrt at h3
-         exact h3; simp
+   rw [← hr] at h6; rw [← Metric.mem_ball] at h6; simp; simp at h6
+   exact h6
 
 
-#check lt_div_iff'
+   -- have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
+   -- rcases hΦ with ⟨r_Φ, hΦ⟩
+
+   -- intros y hy
+   -- obtain ⟨n, rfl⟩ := hy
+   -- have : Φ n ∈ metric.ball 0 r := hr (set.mem_range_self n)
+   -- simp only [metric.mem_ball, dist_zero_right] at this
+   -- have H := Φ_isdescending n
+   -- have H' := Φ_isdescending (n - 1)
+
+
 
 lemma A₁e₁_A₂e₂_isBounded : IsBounded (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) :=
    (isBounded_iff_subset_ball 0).2 A₁e₁_A₂e₂_isBounded'
