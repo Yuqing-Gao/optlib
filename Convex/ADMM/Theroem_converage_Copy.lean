@@ -203,54 +203,39 @@ lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r
 --A₁e₁ + A₂e₂ 是有界序列
 #check Φ_isdescending
 #check Φ_isBounded'
-#check
 
 lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) ⊆ ball 0 r := by
-
+   -- obtain r_Φ
    have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
    rcases hΦ with ⟨r_Φ, hΦ⟩
-
-
-   have h1 :  ∀ n : ℕ+ , (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 <
-   (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 +
-   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := by sorry
-
-   have h2 : ∀ n : ℕ+ , (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 +
-   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 ≤ (Φ n ) - (Φ (n + 1) ) := by exact Φ_isdescending
-
-   have h3 : ∀ n : ℕ+ , ∃ r_Φ : ℝ, (Φ n ) - (Φ (n + 1) ) < r_Φ := by sorry
-
-   have h4 : ∀ n : ℕ+ , ∃ r_Φ : ℝ, (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 < r_Φ := by sorry
-
-   let r := √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))
-   have hr : r =√ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by rfl
+   -- obtain r
+   let r := √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))
+   have hr : r =√ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by rfl
    use r
-
+   -- change goal, introduce n
    intros x hx
    rcases hx with ⟨n, rfl⟩
-
+   #check n
+   -- h1 ~ h5 : n ≥ 1 (n : ℕ +)
+   have h1 : (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 ≤
+   (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 +
+   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := by sorry
+   have h3 : (Φ n ) - (Φ (n + 1) ) < 2 * r_Φ := by sorry
+   have h2 : (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 ≤ (Φ n ) - (Φ (n + 1) ) := by sorry
+   have h4 : (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 < 2 * r_Φ := by
+      calc (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2
+         _ ≤ (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := h1
+         _ ≤ (Φ n ) - (Φ (n + 1) ) := h2
+         _ < 2 * r_Φ := h3
    have h5 : ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
 
+   -- back to goal : n ≥ 0 (n : ℕ)
    have h5' : ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
 
-   have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < √ (r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by
-      rw [← sub_zero (A₁ (e₁ n) + A₂ (e₂ n)) ] at h5'
-      rw[SeminormedAddGroup.dist_eq  (A₁ (e₁ n) + A₂ (e₂ n)) 0]
-      exact h5'
+   have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < √ ( 2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
 
    rw [← hr] at h6; rw [← Metric.mem_ball] at h6; simp; simp at h6
    exact h6
-
-
-   -- have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
-   -- rcases hΦ with ⟨r_Φ, hΦ⟩
-
-   -- intros y hy
-   -- obtain ⟨n, rfl⟩ := hy
-   -- have : Φ n ∈ metric.ball 0 r := hr (set.mem_range_self n)
-   -- simp only [metric.mem_ball, dist_zero_right] at this
-   -- have H := Φ_isdescending n
-   -- have H' := Φ_isdescending (n - 1)
 
 
 
