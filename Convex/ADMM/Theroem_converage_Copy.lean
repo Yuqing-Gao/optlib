@@ -61,7 +61,6 @@ lemma Φ_is_monotone : ∀ n : ℕ+, Φ n ≥ Φ (n+1) := by
          _ ≥ c := by apply Φ_isdescending
          _ ≥ 0 := by apply h
    linarith [h']
-
 lemma nonneg₃ : min (1 - τ) (1 - 1 / τ) > 0 :=sorry
 lemma Φ_is_nonneg : ∀ n : ℕ , Φ n ≥ 0 := by sorry
 
@@ -89,7 +88,6 @@ lemma Φ_isBounded' : ∃ (r : ℝ), (range Φ) ⊆ ball 0 r := by
    use c; intro x hx; simp; rw [range] at hx; simp at hx
    rcases hx with ⟨n,eq⟩; rw [← eq, abs_eq_self.2]; exact Φ_bd_above n
    apply Φ_is_nonneg
-
 lemma Φ_isBounded : IsBounded (range Φ) := (isBounded_iff_subset_ball 0).2  Φ_isBounded'
 
 
@@ -204,6 +202,27 @@ lemma A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₂ ∘ e₂) ) ⊆ ball 0 r
 #check Φ_isdescending
 #check Φ_isBounded'
 
+lemma Φ_sub_nonneg : ∀ n : ℕ+ , 0 ≤ (Φ n) - (Φ (n + 1)) := by
+   intro n
+   have h: 0 ≤ (min τ (1 + τ - τ ^ 2) ) * ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 +
+   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := by
+      have h1 : 0 ≤ (min τ (1 + τ - τ ^ 2) ) * ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 := by
+         have ha: 0 < (min τ (1 + τ - τ ^ 2) ) * ρ := by
+            apply mul_pos nonneg₁ ADMM.hrho
+         have ha': 0 ≤ (min τ (1 + τ - τ ^ 2) ) * ρ := by apply le_of_lt ha
+         have hb: 0 ≤ ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2 := by apply sq_nonneg
+         apply mul_nonneg ha' hb
+      have h2 : 0 ≤ (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := by
+         have ha: 0 < (min 1 (1 + 1 / τ - τ )) * ρ := by
+            apply mul_pos nonneg₂ ADMM.hrho
+         have ha': 0 ≤ (min 1 (1 + 1 / τ - τ )) * ρ := by apply le_of_lt ha
+         have hb: 0 ≤ ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2 := by apply sq_nonneg
+         apply mul_nonneg ha' hb
+      linarith
+   apply le_trans
+   · apply h
+   · apply Φ_isdescending
+
 lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) ⊆ ball 0 r := by
    -- obtain r_Φ
    have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
@@ -212,11 +231,36 @@ lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂
    -- h1 ~ h5 : n ≥ 1 (n : ℕ +)
    have h1 (k : ℕ+): (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 ≤
    (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 +
-   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 := by sorry
+   (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 := by
+      have h1' : 0 ≤ (min τ (1 + τ - τ ^ 2) ) * ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 := by
+         have ha: 0 < (min τ (1 + τ - τ ^ 2) ) * ρ := by
+            apply mul_pos nonneg₁ ADMM.hrho
+         have ha': 0 ≤ (min τ (1 + τ - τ ^ 2) ) * ρ := by apply le_of_lt ha
+         have hb: 0 ≤ ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 := by apply sq_nonneg
+         apply mul_nonneg ha' hb
+      linarith
 
-   have h2 (k : ℕ+): (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 ≤ (Φ k) - (Φ (k + 1)) := by sorry
+   have h2 (k : ℕ+): (min τ (1 + τ - τ ^ 2) ) * ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 ≤ (Φ k) - (Φ (k + 1)) := by
+      apply Φ_isdescending
 
-   have h3 (k : ℕ+): (Φ k) - (Φ (k + 1)) < 2 * r_Φ := by sorry
+   have h3 (k : ℕ+): (Φ k) - (Φ (k + 1)) < 2 * r_Φ := by
+      have h3a: ‖Φ k‖ < r_Φ := by
+         have h3a': Φ k ∈ range Φ := by use k
+         have h_in_ball : Φ k ∈ Metric.ball 0 r_Φ := by apply hΦ h3a'
+         rw [Metric.mem_ball, dist_zero_right] at h_in_ball
+         exact h_in_ball
+      have h3b: ‖Φ (k+1)‖ < r_Φ := by
+         have h3b': Φ (k+1) ∈ range Φ := by use (k+1)
+         have h_in_ball : Φ (k+1) ∈ Metric.ball 0 r_Φ := by apply hΦ h3b'
+         rw [Metric.mem_ball, dist_zero_right] at h_in_ball
+         exact h_in_ball
+      have h3': ‖Φ k‖ + ‖Φ (k+1)‖ < r_Φ + r_Φ := by apply add_lt_add h3a h3b
+      have h3'': ‖Φ k‖ + ‖Φ (k+1)‖ < 2 * r_Φ := by linarith [h3']
+      have h3aa: ‖(Φ k) - (Φ (k + 1))‖ ≤ ‖Φ k‖ + ‖Φ (k+1)‖ := by apply norm_sub_le
+      have h3bb: (Φ k) - (Φ (k + 1)) = ‖(Φ k) - (Φ (k + 1))‖ := by
+         refine Eq.symm (Real.norm_of_nonneg ?hr); exact Φ_sub_nonneg k
+      rw [h3bb]
+      exact lt_of_le_of_lt h3aa h3''
 
    have h4 (k : ℕ+): (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 < 2 * r_Φ := by
       calc (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2
@@ -243,7 +287,11 @@ lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂
    -- combine h5' h_n0 h_n1 together
    have h_n (n : ℕ): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < r := by sorry
 
-   have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < r := by sorry
+   have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < r := by
+      have h_n' := h_n n
+      rw[← sub_zero (A₁ (e₁ n) + A₂ (e₂ n))] at h_n'
+      rw[SeminormedAddGroup.dist_eq (A₁ (e₁ n) + A₂ (e₂ n)) 0]
+      exact h_n'
 
    rw [← Metric.mem_ball] at h6; simp; simp at h6
    exact h6
