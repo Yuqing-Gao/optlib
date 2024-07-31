@@ -290,11 +290,12 @@ lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂
       exact h_k
       apply le_of_lt hn
 
-   have h_n0 (n : ℕ) (hn : n = 0): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + 1 := by linarith
+   have h_n0 : ‖A₁ (e₁ 0) + A₂ (e₂ 0)‖ < ‖A₁ (e₁ 0) + A₂ (e₂ 0)‖ + 1 := by linarith
 
-   have h_n1 (n : ℕ) (hn : n = 1): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + 1 := by linarith
+   have h_n1 : ‖A₁ (e₁ 1) + A₂ (e₂ 1)‖ < ‖A₁ (e₁ 1) + A₂ (e₂ 1)‖ + 1 := by linarith
 
-   let r := (max (max (√ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))) (‖A₁ (e₁ 0) + A₂ (e₂ 0)‖ + 1 )) (‖A₁ (e₁ 1) + A₂ (e₂ 1)‖ + 1 ))  -- can we change r's value here? idk
+   let r := (max (max (√ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))) (‖A₁ (e₁ 0) + A₂ (e₂ 0)‖ + 1 )) (‖A₁ (e₁ 1) + A₂ (e₂ 1)‖ + 1 ))
+   have hr' : r = (max (max (√ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))) (‖A₁ (e₁ 0) + A₂ (e₂ 0)‖ + 1 )) (‖A₁ (e₁ 1) + A₂ (e₂ 1)‖ + 1 )) := by rfl
    use r
 
    intros x hx
@@ -303,7 +304,21 @@ lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂
    -- combine h5' h_n0 h_n1 together
    have h_n (n : ℕ): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < r := by
 
+      by_cases hn0 : n = 0
+      rw [hn0]
+      apply lt_of_lt_of_le h_n0
+      rw [hr', max_assoc, max_left_comm]
+      apply le_max_left
 
+      by_cases hn1 : n = 1
+      rw [hn1]
+      apply lt_of_lt_of_le h_n1
+      rw [hr']; apply le_max_right
+      have hn : 1 < n := by
+         exact Nat.one_lt_iff_ne_zero_and_ne_one.mpr ⟨hn0, hn1⟩
+      apply lt_of_lt_of_le (h5' n hn)
+      rw [hr']
+      rw [max_assoc]; apply le_max_left
 
    have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < r := by
       have h_n' := h_n n
