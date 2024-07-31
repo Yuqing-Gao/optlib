@@ -223,6 +223,8 @@ lemma Φ_sub_nonneg : ∀ n : ℕ+ , 0 ≤ (Φ n) - (Φ (n + 1)) := by
    · apply h
    · apply Φ_isdescending
 
+lemma ineq2 : 0 < min 1 (1 + 1 / τ - τ ) * ρ := by apply mul_pos nonneg₂ ADMM.hrho
+
 lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) ⊆ ball 0 r := by
    -- obtain r_Φ
    have hΦ : ∃ r_Φ, range Φ ⊆ Metric.ball 0 r_Φ := by apply Φ_isBounded'
@@ -262,30 +264,46 @@ lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂
       rw [h3bb]
       exact lt_of_le_of_lt h3aa h3''
 
-   have h4 (k : ℕ+): (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 < 2 * r_Φ := by
+   have h4 (k : ℕ+): ((min 1 (1 + 1 / τ - τ )) * ρ) * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 < 2 * r_Φ := by
       calc (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2
          _ ≤ (min τ (1 + τ - τ ^ 2) )* ρ * ‖A₂ (x₂ k - x₂ (k + 1))‖ ^ 2 + (min 1 (1 + 1 / τ - τ )) * ρ * ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ ^ 2 := h1 k
          _ ≤ (Φ k) - (Φ (k + 1)) := h2 k
          _ < 2 * r_Φ := h3 k
 
-   have h5 (k : ℕ+): ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ < √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
+   have h5 (k : ℕ+): ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ < √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by
+      have h4_ins := h4 k
+      have h5a: 0 ≤ ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ := by apply norm_nonneg
+      calc ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖
+         _ = √ ((‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖) ^ 2) := by conv in ‖A₁ (e₁ (k + 1)) + A₂ (e₂ (k + 1))‖ => rw [← Real.sqrt_sq h5a];rfl
+         _ < √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by
+            rw [← lt_div_iff' ineq2] at h4_ins
+            apply Real.sqrt_lt_sqrt at h4_ins
+            exact h4_ins; simp
 
-   -- back to goal : n : ℕ
-   have h5' (n : ℕ) (hn : n ≥ 2): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by sorry
+   have h5' (n : ℕ) (hn : 1 < n): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < √ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ)) := by
+      have h_pos : 0 < n - 1 := by exact Nat.zero_lt_sub_of_lt hn
+      let k : ℕ+ := (n-1).toPNat h_pos
+      have h_k := h5 k
+      have k_to_n : k = n - 1 := by rfl
+      rw [k_to_n] at h_k
+      rw [Nat.sub_add_cancel] at h_k
+      exact h_k
+      apply le_of_lt hn
 
    have h_n0 (n : ℕ) (hn : n = 0): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + 1 := by linarith
 
    have h_n1 (n : ℕ) (hn : n = 1): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + 1 := by linarith
 
-   -- introduce new r
    let r := (max (max (√ (2 * r_Φ / ((min 1 (1 + 1 / τ - τ )) * ρ))) (‖A₁ (e₁ 0) + A₂ (e₂ 0)‖ + 1 )) (‖A₁ (e₁ 1) + A₂ (e₂ 1)‖ + 1 ))  -- can we change r's value here? idk
    use r
-   -- change goal, introduce n : ℕ
+
    intros x hx
    rcases hx with ⟨n, rfl⟩
 
    -- combine h5' h_n0 h_n1 together
-   have h_n (n : ℕ): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < r := by sorry
+   have h_n (n : ℕ): ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < r := by
+
+
 
    have h6: dist (A₁ (e₁ n) + A₂ (e₂ n)) 0 < r := by
       have h_n' := h_n n
