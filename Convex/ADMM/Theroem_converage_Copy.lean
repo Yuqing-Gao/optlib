@@ -46,51 +46,16 @@ variable [Setting E₁ E₂ F admm admm_kkt]
 lemma inSet {X : Type*} ( f : ℕ → X ) : ∀ n : ℕ , f n ∈ range f := by
    intro n;use n
 
---dyx xzx
-
-lemma nonneg₁ : min τ (1 + τ - τ ^ 2) > 0 :=sorry
-lemma nonneg₂ : min 1 (1 + 1 / τ - τ) > 0 :=sorry
-lemma Φ_is_monotone : ∀ n : ℕ+, Φ n ≥ Φ (n+1) := by
-   intro n
-   let c := (min τ (1 + τ - τ ^ 2)) * ρ * ‖A₂ (x₂ n - x₂ (n + 1))‖ ^ 2
-          + (min 1 (1 + 1 / τ - τ)) * ρ * ‖A₁ (e₁ (n + 1)) + A₂ (e₂ (n + 1))‖ ^ 2
-   have h : c ≥ 0 := by
-      sorry
-   have h' : (Φ n) - (Φ (n + 1)) ≥ 0 := by
-      calc
-         _ ≥ c := by apply Φ_isdescending
-         _ ≥ 0 := by apply h
-   linarith [h']
+lemma nonneg_prime : 1 + τ - τ ^ 2 > 0 := by sorry
+lemma nonneg₁ : min τ (1 + τ - τ ^ 2) > 0 := sorry
+lemma nonneg₂ : min 1 (1 + 1 / τ - τ) > 0 := sorry
+lemma Φ_is_monotone : ∀ n : ℕ+, Φ n ≥ Φ (n+1) := sorry
 lemma nonneg₃ : min (1 - τ) (1 - 1 / τ) > 0 :=sorry
-lemma Φ_is_nonneg : ∀ n : ℕ , Φ n ≥ 0 := by sorry
-
-
---byf
+lemma Φ_is_nonneg : ∀ n : ℕ , Φ n ≥ 0 := sorry
+lemma Φ_bd_above : ∃ C : ℝ, ∀ n : ℕ, Φ n < C := by sorry
 --Φ 是有界序列
-lemma Φ_isBounded' : ∃ (r : ℝ), (range Φ) ⊆ ball 0 r := by
-   let c := Max.max ((Φ 0) + 1) ((Φ 1) + 1)
-   have Φ_bd_above (n : ℕ): Φ n < c := by
-      induction' n with k h
-      ·  have : Φ 0 < (Φ 0) + 1 := by linarith
-         apply lt_max_iff.2
-         left; exact this
-      ·  by_cases hh : k = 0
-         ·  rw [hh,zero_add]
-            apply lt_max_iff.2
-            right; linarith
-         ·  push_neg at hh
-            have k_pos : k > 0 := by apply Nat.pos_of_ne_zero hh
-            have : (Φ) (k.toPNat k_pos) ≥ (Φ) ((k.toPNat k_pos ) + 1) := by
-               apply Φ_is_monotone
-            have h' : Φ (k.toPNat k_pos) < c := by apply h
-            show Φ ((k.toPNat k_pos) + 1) < c
-            linarith
-   use c; intro x hx; simp; rw [range] at hx; simp at hx
-   rcases hx with ⟨n,eq⟩; rw [← eq, abs_eq_self.2]; exact Φ_bd_above n
-   apply Φ_is_nonneg
+lemma Φ_isBounded' : ∃ (r : ℝ), (range Φ) ⊆ ball 0 r := by sorry
 lemma Φ_isBounded : IsBounded (range Φ) := (isBounded_iff_subset_ball 0).2  Φ_isBounded'
-
-
 --ey是有界序列
 lemma ey_isBounded' : ∃ (r : ℝ), (range ey) ⊆ ball 0 r := sorry
 lemma ey_isBounded : IsBounded (range ey ) := (isBounded_iff_subset_ball 0).2  ey_isBounded'
@@ -328,15 +293,54 @@ lemma A₁e₁_A₂e₂_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁ + A₂
 
    rw [← Metric.mem_ball] at h6; simp; simp at h6
    exact h6
-
-
-
 lemma A₁e₁_A₂e₂_isBounded : IsBounded (range (A₁ ∘ e₁ + A₂ ∘ e₂) ) :=
    (isBounded_iff_subset_ball 0).2 A₁e₁_A₂e₂_isBounded'
 
---mht
 --A₁e₁ 是有界序列
-lemma A₁e₁_isBounded' : ∃ (r : ℝ), (range (A₁ ∘ e₁) ) ⊆ ball 0 r := sorry
+lemma A₁e₁_isBounded' : ∃ (r : ℝ), range (A₁ ∘ e₁) ⊆ ball 0 r := by
+
+   have h_A₂e₂ : ∃ r1, range (A₂ ∘ e₂) ⊆ ball 0 r1 := by apply A₂e₂_isBounded'
+   rcases h_A₂e₂ with ⟨r1, h_A₂e₂⟩
+
+   have h_A₁e₁_A₂e₂ : ∃ r2, range (A₁ ∘ e₁ + A₂ ∘ e₂) ⊆ ball 0 r2 := by apply A₁e₁_A₂e₂_isBounded'
+   rcases h_A₁e₁_A₂e₂ with ⟨r2, h_A₁e₁_A₂e₂⟩
+
+   let r := r1 + r2
+   have hr : r = r1 + r2 := by rfl
+   use r
+
+   intros x hx
+   rcases hx with ⟨n, rfl⟩
+
+   have h : ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + ‖A₂ (e₂ n)‖ < r1 + r2 := by
+      have ha : ‖A₂ (e₂ n)‖ < r1 := by
+         have haa : A₂ (e₂ n) ∈ range (A₂ ∘ e₂) := by use n; simp
+         have ha_in_ball : A₂ (e₂ n) ∈ Metric.ball 0 r1 := by apply h_A₂e₂ haa
+         rw [Metric.mem_ball, dist_zero_right] at ha_in_ball
+         exact ha_in_ball
+      have hb : ‖A₁ (e₁ n) + A₂ (e₂ n)‖ < r2 := by
+         have hbb : A₁ (e₁ n) + A₂ (e₂ n) ∈ range (A₁ ∘ e₁ + A₂ ∘ e₂) := by use n; simp
+         have hb_in_ball : A₁ (e₁ n) + A₂ (e₂ n) ∈ Metric.ball 0 r2 := by apply h_A₁e₁_A₂e₂ hbb
+         rw [Metric.mem_ball, dist_zero_right] at hb_in_ball
+         exact hb_in_ball
+      linarith
+
+   have h_ineq : ‖A₁ (e₁ n)‖ ≤ ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + ‖A₂ (e₂ n)‖ := by apply norm_le_add_norm_add
+
+   have h_norm : ‖A₁ (e₁ n)‖ < r := by
+      calc ‖A₁ (e₁ n)‖
+         _ ≤ ‖A₁ (e₁ n) + A₂ (e₂ n)‖ + ‖A₂ (e₂ n)‖ := h_ineq
+         _ < r1 + r2 := h
+         _ = r := hr
+
+   have h_dist : dist (A₁ (e₁ n)) 0 < r := by
+      rw[← sub_zero (A₁ (e₁ n))] at h_norm
+      rw[SeminormedAddGroup.dist_eq (A₁ (e₁ n)) 0]
+      exact h_norm
+
+   rw [← Metric.mem_ball] at h_dist
+   apply h_dist
+
 
 lemma A₁e₁_isBounded : IsBounded (range (A₁ ∘ e₁) ) :=
    (isBounded_iff_subset_ball 0).2 A₁e₁_isBounded'
@@ -559,7 +563,7 @@ lemma Φ_converage_zero : Tendsto Φ atTop (𝓝 0) := sorry
 
 lemma e₁_converage_zero : Tendsto e₁ atTop (𝓝 0) :=sorry
 lemma e₂_converage_zero : Tendsto e₂ atTop (𝓝 0) :=sorry
-lemma ey_converage_zero : Tendsto ey atTop (𝓝 0) :=sorry
+lemma ey_converage_zero : Tendsto ey atTop (𝓝 0) := sorry
 
 #check e₁
 --lim_{ n → ∞} x_n - x = 0 =>  lim_{ n → ∞} x_n  = x
